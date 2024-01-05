@@ -1,0 +1,12 @@
+const playlistControll = require('../controllers/playlist');
+const LibraryCount = require('../controllers/library');
+const express = require('express');
+const router = express.Router();
+router.get('/get-playlist', playlistControll.getPlayList);
+router.get('/get-favorite', LibraryCount.getFavCount);
+router.get('/get-bookmark', LibraryCount.getBookmarkCount);
+router.get('/get-highlight', LibraryCount.getHighLights);
+router.get('/get-playlist', LibraryCount.getPlaylist);
+router.get('/get-finish', LibraryCount.getFinish);
+router.get('/get-downloads', LibraryCount.getDownloads);
+module.exports = router;
