@@ -77,7 +77,9 @@ exports.login = async (req, res, next) => {
                     expiresIn: "1h"
                 }
             );
-
+            user.resetToken=token;
+            user.resetTokenExpiration = Date.now() + 3600000;
+            user.save();
             return res.status(200).json({ token: token, userId: user._id.toString(), email: email });
         });
     } catch (err) {
@@ -90,6 +92,8 @@ exports.login = async (req, res, next) => {
 exports.postOTPEmail = async(req, res, next) =>
 {
 const email = req.body.email;
+const user = await User.findOne({email: email});
+const storedToken = user.resetToken;
 const otp = OtpGenerator.generate(4, {upperCaseAlphabets: false, specialChars: false});
 try
 {
@@ -103,34 +107,56 @@ const message = {
     From: 'srs1@3rdeyesoft.com',
     To: email,
     Subject: "Your OTP",
-    Textbody: `Your OTP is ${otp}`,
+    Textbody: `Your OTP is ${otp} and Token ${storedToken}`,
 };
 const response = await postmarkClient.sendEmail(message);
 console.log("Email Sent With OTP", response);
 };
-exports.changePasswordOTP = async(req, res, next) =>
-{
-const otp = req.body.otp;
-const password = req.body.password;
-const confirmPassword = req.body.confirmPassword;
-const user = await User.findOne({otp: otp});
-if(password!==confirmPassword)
-{
-    return res.status(400).json({message: "Password Not Matched"});
-}
-else if(password===confirmPassword)
-{
-  const hashedPassword = await bcrypt.hash(password, 12);
-  user.password=hashedPassword;
- 
-  await user.save();
-  await User.findOneAndUpdate({ _id: user._id}, { $set: {otp: null}});
-
-const newToken = jwt.sign({userId: user._id, email: user.email }, 'somesupersecretsecret', {expiresIn: '1h'} );
-req.session.user = { userId: user._id, email: user.email, password: user.password} ;
-  res.json({message: "Password Update", newToken});
-}
-};
+exports.changePasswordOTP = async (req, res, next) => {
+    const otp = req.body.otp;
+    const password = req.body.password;
+    const confirmPassword = req.body.confirmPassword;
+    const passwordToken = req.body.passwordToken;
+  
+    try {
+      const user = await User.findOne({
+        otp: otp,
+        resetToken: passwordToken,
+        resetTokenExpiration: { $gt: Date.now() },
+      });
+  
+      if (!user) {
+        return res.status(404).json({ message: "User not found or OTP expired" });
+      }
+  
+      if (password !== confirmPassword) {
+        return res.status(400).json({ message: "Password not matched" });
+      } else {
+        const hashedPassword = await bcrypt.hash(password, 12);
+        user.password = hashedPassword;
+        user.resetToken = undefined;
+        user.resetTokenExpiration = undefined;
+        await user.save();
+        await User.findOneAndUpdate({ _id: user._id }, { $set: { otp: null } });
+  
+        const newToken = jwt.sign(
+          { userId: user._id, email: user.email },
+          "somesupersecretsecret",
+          { expiresIn: "1h" }
+        );
+        req.session.user = {
+          userId: user._id,
+          email: user.email,
+          password: user.password,
+        };
+        res.json({ message: "Password updated", newToken });
+      }
+    } catch (error) {
+      console.error("Error in changePasswordOTP:", error);
+      res.status(500).json({ message: "Internal Server Error" });
+    }
+  };
+  
 exports.getUsers = async(req, res, next) =>
 {
     const results = await User.find();

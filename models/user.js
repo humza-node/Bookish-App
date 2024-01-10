@@ -14,6 +14,8 @@ const userSchema = new Schema (
             required: true
         },
         otp: String,
+        resetToken: String,
+        resetTokenExpiration: Date
     },
     {
         timestamps: true
