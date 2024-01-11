@@ -16,13 +16,15 @@ const mintues = req.body.mintues;
 const bookAudioUrl = req.body.bookAudioUrl;
 const bookUrl = req.body.bookUrl;
 const authorId = req.body.authorId;
+const baseUrl = 'https://pink-angry-beetle.cyclic.app';
+const absoluteImageUrl = `${baseUrl}/${image}`;
 const books = new Book(
     {
 booktitle: booktitle,
 bookUserViewtype: bookUserViewtype,
 authorName: authorName,
 bookrating: bookrating,
-bookImageUrl: image,
+bookImageUrl: absoluteImageUrl,
 bookCategory: bookCategory,
 aboutthisBook: aboutthisBook,
 bookSummary: bookSummary,
@@ -59,6 +61,8 @@ exports.updateBooks = async(req, res, next) =>
     const bookAudioUrl = req.body.bookAudioUrl;
     const bookUrl = req.body.bookUrl;
     const authorId = req.body.authorId;
+    const baseUrl = 'https://pink-angry-beetle.cyclic.app';
+const absoluteImageUrl = `${baseUrl}/${image}`;
 Book.findById(bookId).then(books =>
     {
         if(!books)
@@ -83,7 +87,7 @@ Book.findById(bookId).then(books =>
         if(image)
         {
             filehelper.deletefile(books.bookImageUrl);
-            books.bookImageUrl = image;
+            books.bookImageUrl = absoluteImageUrl;
         }
            return  books.save();
     }).then(result =>

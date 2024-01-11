@@ -8,9 +8,11 @@ exports.addPersonalInfo = async(req, res, next) =>
     const email = req.body.email;
     const location = req.body.location;
     const userId = req.user._id;
+    const baseUrl = 'https://pink-angry-beetle.cyclic.app';
+const absoluteImageUrl = `${baseUrl}/${image}`;
     const Personal = new PersonalInfo(
         {
-            userImage: image,
+            userImage: absoluteImageUrl,
             fullname: fullname,
             phone: phone,
             email: email,
@@ -29,6 +31,8 @@ exports.updatePersonalInfo = async(req, res, next) =>
     const phone = req.body.phone;
     const email = req.body.email;
     const location = req.body.location;
+    const baseUrl = 'https://pink-angry-beetle.cyclic.app';
+const absoluteImageUrl = `${baseUrl}/${image}`;
     PersonalInfo.findById(personalId).then(personals =>
         {
             if(!personals)
@@ -44,7 +48,7 @@ exports.updatePersonalInfo = async(req, res, next) =>
             if(image)
             {
                 filehelper.deletefile(personals.userImage);
-                personals.userImage=image;
+                personals.userImage=absoluteImageUrl;
             }
             return personals.save();
         }).then(result =>

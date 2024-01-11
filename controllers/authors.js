@@ -9,9 +9,11 @@ const penName = req.body.penName;
 const rating = req.body.rating;
 const totalBooks = req.body.totalBooks;
 const aboutauthor = req.body.aboutauthor;
+const baseUrl = 'https://pink-angry-beetle.cyclic.app';
+const absoluteImageUrl = `${baseUrl}/${image}`;
 const authors = new Author(
     {
-        authorImage: image,
+        authorImage: absoluteImageUrl,
         authorname: authorname,
         authortype: authortype,
         penName: penName,
@@ -33,6 +35,8 @@ exports.updateAuthors = async(req, res, next) =>
     const rating = req.body.rating;
     const totalBooks = req.body.totalBooks;
     const aboutauthor = req.body.aboutauthor;
+    const baseUrl = 'https://pink-angry-beetle.cyclic.app';
+const absoluteImageUrl = `${baseUrl}/${image}`;
     Author.findById(authorId).then(authors =>
         {
             if(!authors)
@@ -50,7 +54,7 @@ exports.updateAuthors = async(req, res, next) =>
             if(image)
             {
                 filehelper.deletefile(authors.authorImage);
-                authors.authorImage=image;
+                authors.authorImage=absoluteImageUrl;
             }
             return authors.save();
         }).then(result =>

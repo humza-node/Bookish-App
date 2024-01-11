@@ -9,10 +9,6 @@ router.post('/forget', UserController.postOTPEmail);
 router.post('/confirmPassword', UserController.changePasswordOTP);
 router.get('/getUsers', UserController.getUsers);
 router.post('/logout', UserController.logout);
-
 router.delete('/password', AccountDelete.deleteUser);
-
 router.post('/change-password', ChangePassword.getChangePassword);
-
-
 module.exports = router;
