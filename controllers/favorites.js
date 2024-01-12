@@ -1,19 +1,25 @@
 const Favorite = require('../models/favorites');
 const Book = require('../models/book');
 const User = require('../models/user');
-exports.addFavorite = async(req, res, next) =>
-{
-const bookId = req.body.bookId;
-const userId = req.user._id;
-const favorite = new Favorite(
-    {
-        bookId: bookId,
-        userId: userId
+exports.addFavorite = async (req, res, next) => {
+    try {
+        const bookId = req.body.bookId;
+        const userId = req.user._id;
+
+        const favorite = new Favorite({
+            bookId: bookId,
+            userId: userId
+        });
+
+        const result = await favorite.save();
+        res.status(200).json({ message: "Results", result });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Internal Server Error" });
+        next(err);
     }
-);
-const result = await favorite.save();
-res.status(200).json({message: "Results", result});
 };
+
 exports.updateFavorite = async(req, res, next) =>
 {
     const favoriteId = req.params.favoriteId;

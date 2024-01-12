@@ -26,3 +26,54 @@ catch(error)
     res.status(500).json({error: "Internal Server Error"});
 }
 };
+exports.UpdateCard = async(req, res, next) =>
+{
+    const cardId = req.params.cardId;
+    const name = req.body.name;
+    const cardNumber=req.body.cardNumber;
+    const cvv = req.body.cvv;
+    const expiry_date=req.body.expiry_date;
+Cards.findById(cardId).then(cards=>
+    {
+        if(!cards)
+        {
+            const error=new Error("Cards Not Exist");
+            error.statusCode=404;
+            throw error;
+        }
+        cards.name=name;
+        cards.card_number=cardNumber;
+        cards.cvv=cvv;
+        cards.expiry_date=expiry_date;
+        const results =  cards.save();
+        return res.status(200).json({message: "Updated", results});
+    }).catch(err =>
+        {
+            if(!err.statusCode)
+            {
+                err.statusCode=500;
+            }
+            next(err);
+        });
+};
+exports.deleteCards = async(req, res, next) =>
+{
+    const cardId = req.params.cardId;
+    Cards.findById(cardId).then(cards=>
+    {
+        if(!cards)
+        {
+            const error = new Error("No Cards");
+            error.statusCode=404;
+            throw error;
+        }
+    return Cards.findByIdAndDelete(cardId);
+    }).then(()=>
+    {
+        console.log("Cards Deleted");
+        res.status(200).json({message: "Cards Deleted"});
+    }).catch(err =>
+        {
+          res.status(200).json({message: "Cards Delete Failed"});
+        });
+};

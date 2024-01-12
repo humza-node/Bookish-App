@@ -3,39 +3,68 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const OtpGenerator = require('otp-generator');
 const postmarkClient = require('../postmark');
-exports.getAddUser = async(req, res, next) =>
-{
-const email = req.body.email;
-const password = req.body.password;
-const confirmPassword = req.body.confirmPassword;
-if(password!==confirmPassword)
-{
-   return res.status(400).json({message: "Password Not Matched"});
-}
-else  if(password === confirmPassword)
-{
-bcrypt.hash(password, 12).then(hashedPw =>
-    {
-        const user = new User(
-            {
-                email: email,
-                password: hashedPw
-            }
-        );
-        return user.save();
-    }).then(results =>
-        {
-            return res.status(200).json({message: "User Created", userId: results._id});
-        }).catch(err => {
-            if(!err.statusCode)
-            {
-                err.statusCode=500;
-            }
-            next(err);
+exports.getAddUser = async (req, res, next) => {
+    const email = req.body.email;
+    const password = req.body.password;
+    try {
+        const hashedPw = await bcrypt.hash(password, 12);
+        const user = new User({
+            email: email,
+            password: hashedPw
+        });
+
+        const savedUser = await user.save();
+
+        // Generate OTP
+        function generateNumericOtp(length) {
+            const min = Math.pow(10, length - 1);
+            const max = Math.pow(10, length) - 1;
+            return Math.floor(Math.random() * (max - min + 1) + min);
         }
+        
+        const otp = generateNumericOtp(4);
+        
+
+        // Save OTP to the user
+        await User.findOneAndUpdate({ email }, { otp }, { upsert: true });
+
+        // Send email with OTP
+        const message = {
+            From: 'srs1@3rdeyesoft.com',
+            To: email,
+            Subject: "Your OTP",
+            Textbody: `Your OTP is ${otp}`,
+        };
+        const response = await postmarkClient.sendEmail(message);
+        console.log("Email Sent With OTP", response);
+
+        // Generate and send JWT token
+        const token = jwt.sign(
+            {
+                email: savedUser.email,
+                userId: savedUser._id.toString(),
+            },
+            'somesupersecretsecret', // Replace 'your-secret-key' with your actual secret key for JWT
+            { expiresIn: '1h' } // Set an expiration time for the token
         );
-}
+        // Update resetToken and resetTokenExpiration properties
+        savedUser.resetToken = token;
+        savedUser.resetTokenExpiration = Date.now() + 3600000;
+        await savedUser.save();
+        req.session.isLoggedIn = true;
+        req.session.user = savedUser;
+        req.session.save();
+        // Send the response with token and user details
+        return res.status(200).json({ token: token, userId: savedUser._id.toString(), email: email });
+    } catch (err) {
+        console.error(err);
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
+        next(err);
+    }
 };
+
 exports.login = async (req, res, next) => {
     const { email, password } = req.body;
 
@@ -66,21 +95,7 @@ exports.login = async (req, res, next) => {
                 console.error(err);
                 return res.status(500).json({ error: 'Internal Server Error' });
             }
-
-            const token = jwt.sign(
-                {
-                    email: user.email,
-                    userId: user._id.toString()
-                },
-                'somesupersecretsecret',
-                {
-                    expiresIn: "1h"
-                }
-            );
-            user.resetToken=token;
-            user.resetTokenExpiration = Date.now() + 3600000;
-            user.save();
-            return res.status(200).json({ token: token, userId: user._id.toString(), email: email });
+            return res.status(200).json({ userId: user._id.toString(), email: email });
         });
     } catch (err) {
         if (!err.statusCode) {

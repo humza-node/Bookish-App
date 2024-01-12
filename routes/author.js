@@ -6,4 +6,5 @@ router.put('/update-author/:authorId', AuthorController.updateAuthors);
 router.get('/getAuthors', AuthorController.getAuthors);
 router.delete('/deleteAuthors/:authorId', AuthorController.getDeleteAuthor);
 router.get('/getSingleAuthor/:authorId', AuthorController.getSingleAuthor);
+router.get('/get-searchAuthor', AuthorController.getSearchAuthors);
 module.exports=router;

@@ -106,3 +106,9 @@ exports.getSingleAuthor = async(req, res, next) =>
   const authors = await Author.findById(authorId);
   res.status(200).json({message: "Fetch Single Author", authors});
 };
+exports.getSearchAuthors = async(req, res, next) =>
+{
+    const name = req.query.name;
+    const FindAuthors = await Author.find({authorname: {$regex: new RegExp(name, 'i')}});
+    res.status(200).json({message: "Fetch Authors", FindAuthors});
+};

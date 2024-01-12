@@ -67,7 +67,7 @@ const PlayListRoute = require('./routes/playlist');
 const FinishRoute = require('./routes/finish');
 const PersonalRoute = require('./routes/personal');
 const DownloadRoute = require('./routes/download');
-
+const RatingRoute = require('./routes/rating');
 // Middleware to set locals for templates
 app.use((req, res, next) => {
     req.session = req.session || {};
@@ -109,7 +109,7 @@ app.use(FinishRoute);
 app.use(PersonalRoute);
 
 app.use(DownloadRoute);
-
+app.use(RatingRoute);
 // Start your server
 mongoose.connect(MONGO_DB_URI)
     .then(results => {
