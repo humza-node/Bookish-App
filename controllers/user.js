@@ -55,7 +55,7 @@ exports.getAddUser = async (req, res, next) => {
         req.session.user = savedUser;
         req.session.save();
         // Send the response with token and user details
-        return res.status(200).json({ token: token, userId: savedUser._id.toString(), email: email });
+        return res.status(200).json({message: "The User Signup Succesfully", token: token });
     } catch (err) {
         console.error(err);
         if (!err.statusCode) {
@@ -104,7 +104,7 @@ exports.login = async (req, res, next) => {
 exports.postOTPEmail = async(req, res, next) =>
 {
 const email = req.body.email;
-const user = await User.findOne({email: email});
+//const user = await User.findOne({email: email});
 
 function generateNumericOtp(length) {
     const min = Math.pow(10, length - 1);
@@ -112,18 +112,6 @@ function generateNumericOtp(length) {
     return Math.floor(Math.random() * (max - min + 1) + min);
 }
 const otp = generateNumericOtp(4);
-const storedToken = jwt.sign({
-    email: email,
-    userId: user._id.toString()
-},
- 'somesupersecretsecret',
- {
-    expiresIn: '1h'
- }
-);
-user.resetToken = storedToken;
-user.resetTokenExpiration=Date.now() + 3600000;
-user.save();
 
 try
 {
@@ -137,10 +125,11 @@ const message = {
     From: 'srs1@3rdeyesoft.com',
     To: email,
     Subject: "Your OTP",
-    Textbody: `Your OTP is ${otp} and Token ${storedToken}`,
+    Textbody: `Your OTP is ${otp} `,
 };
 const response = await postmarkClient.sendEmail(message);
 console.log("Email Sent With OTP", response);
+res.json({ message: 'OTP sent successfully.',response });
 };
 exports.changePasswordOTP = async (req, res, next) => {
     const otp = req.body.otp;
@@ -160,8 +149,6 @@ exports.changePasswordOTP = async (req, res, next) => {
   
         const hashedPassword = await bcrypt.hash(password, 12);
         user.password = hashedPassword;
-        user.resetToken = undefined;
-        user.resetTokenExpiration = undefined;
         await user.save();
         await User.findOneAndUpdate({ _id: user._id }, { $set: { otp: null } });
   
