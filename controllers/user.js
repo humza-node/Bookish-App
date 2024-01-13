@@ -64,7 +64,6 @@ exports.getAddUser = async (req, res, next) => {
         next(err);
     }
 };
-
 exports.login = async (req, res, next) => {
     const { email, password } = req.body;
 
@@ -84,11 +83,9 @@ exports.login = async (req, res, next) => {
             error.statusCode = 401;
             throw error;
         }
-
         // Set the user in the session
         req.session.isLoggedIn = true;
         req.session.user = user;
-
         // Save the session
         req.session.save((err) => {
             if (err) {
@@ -108,8 +105,26 @@ exports.postOTPEmail = async(req, res, next) =>
 {
 const email = req.body.email;
 const user = await User.findOne({email: email});
-const storedToken = user.resetToken;
-const otp = OtpGenerator.generate(4, {upperCaseAlphabets: false, specialChars: false});
+
+function generateNumericOtp(length) {
+    const min = Math.pow(10, length - 1);
+    const max = Math.pow(10, length) - 1;
+    return Math.floor(Math.random() * (max - min + 1) + min);
+}
+const otp = generateNumericOtp(4);
+const storedToken = jwt.sign({
+    email: email,
+    userId: user._id.toString()
+},
+ 'somesupersecretsecret',
+ {
+    expiresIn: '1h'
+ }
+);
+user.resetToken = storedToken;
+user.resetTokenExpiration=Date.now() + 3600000;
+user.save();
+
 try
 {
     await User.findOneAndUpdate({email}, {otp}, {upsert: true});
@@ -130,7 +145,6 @@ console.log("Email Sent With OTP", response);
 exports.changePasswordOTP = async (req, res, next) => {
     const otp = req.body.otp;
     const password = req.body.password;
-    const confirmPassword = req.body.confirmPassword;
     const passwordToken = req.body.passwordToken;
   
     try {
@@ -144,9 +158,6 @@ exports.changePasswordOTP = async (req, res, next) => {
         return res.status(404).json({ message: "User not found or OTP expired" });
       }
   
-      if (password !== confirmPassword) {
-        return res.status(400).json({ message: "Password not matched" });
-      } else {
         const hashedPassword = await bcrypt.hash(password, 12);
         user.password = hashedPassword;
         user.resetToken = undefined;
@@ -154,20 +165,20 @@ exports.changePasswordOTP = async (req, res, next) => {
         await user.save();
         await User.findOneAndUpdate({ _id: user._id }, { $set: { otp: null } });
   
-        const newToken = jwt.sign(
-          { userId: user._id, email: user.email },
-          "somesupersecretsecret",
-          { expiresIn: "1h" }
-        );
+      //  const newToken = jwt.sign(
+   //       { userId: user._id, email: user.email },
+   //       "somesupersecretsecret",
+   //       { expiresIn: "1h" }
+    //    );
         req.session.user = {
           userId: user._id,
           email: user.email,
           password: user.password,
         };
-        res.json({ message: "Password updated", newToken });
-      }
+        res.json({ message: "Password updated"});
+      
     } catch (error) {
-      console.error("Error in changePasswordOTP:", error);
+      console.error("Error in change Password OTP:", error);
       res.status(500).json({ message: "Internal Server Error" });
     }
   };

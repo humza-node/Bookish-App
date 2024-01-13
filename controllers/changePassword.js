@@ -6,7 +6,7 @@ exports.getChangePassword = async(req, res, next) =>
 {
     const oldPassword = req.body.oldPassword;
     const newPassword = req.body.newPassword;
-    const confirmPassword = req.body.confirmPassword;
+  
     const userId = req.user._id;
     const user = await User.findById(userId);
 
@@ -19,17 +19,13 @@ if(!IsOldPasswordValid)
 {
   return  res.status(401).json({message: "Invalid Old Password"});
 }
-if(newPassword!==confirmPassword)
-{
- return  res.status(200).json({message: "New Password and Confirmation Not Match"});
-}
+
 const hashedPassword = await bcrypt.hash(newPassword,12);
 user.password = hashedPassword;
  await user.save();
 
-const newToken = jwt.sign({userId: user._id, email: user.email}, 'somesupersecretsecret', {expiresIn: '1h'});
+// const newToken = jwt.sign({userId: user._id, email: user.email}, 'somesupersecretsecret', {expiresIn: '1h'});
 
 req.session.user = { userId: user._id, email: user.email, password: user.password} ;
-
-res.status(200).json({message: "Password Changed Successfully", newToken});
+res.status(200).json({message: "Password Changed Successfully"});
 };
