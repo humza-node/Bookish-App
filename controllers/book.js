@@ -15,6 +15,7 @@ const abstract = req.body.abstract;
 const mintues = req.body.mintues;
 const bookAudioUrl = req.body.bookAudioUrl;
 const bookUrl = req.body.bookUrl;
+const audioDuration = req.body.audioDuration;
 const authorId = req.body.authorId;
 const baseUrl = 'https://pink-angry-beetle.cyclic.app';
 const absoluteImageUrl = `${baseUrl}/${image}`;
@@ -33,6 +34,7 @@ abstract: abstract,
 mintues: mintues,
 bookAudioUrl: bookAudioUrl,
 bookUrl: bookUrl,
+audioDuration: audioDuration,
 authorId:authorId
     }
 );
@@ -60,6 +62,7 @@ exports.updateBooks = async(req, res, next) =>
     const mintues = req.body.mintues;
     const bookAudioUrl = req.body.bookAudioUrl;
     const bookUrl = req.body.bookUrl;
+    const audioDuration=req.body.audioDuration;
     const authorId = req.body.authorId;
     const baseUrl = 'https://pink-angry-beetle.cyclic.app';
 const absoluteImageUrl = `${baseUrl}/${image}`;
@@ -83,6 +86,7 @@ Book.findById(bookId).then(books =>
         books.mintues = mintues;
         books.bookAudioUrl = bookAudioUrl;
         books.bookUrl=bookUrl;
+        books.audioDuration=audioDuration;
         books.authorId = authorId;
         if(image)
         {

@@ -1,6 +1,6 @@
 const Finish = require('../models/finish');
 const Book = require('../models/book');
-
+let playbackTimeout;
 exports.addFinish = async (req, res, next) => {
   try {
     const userId = req.user._id;
@@ -13,9 +13,9 @@ exports.addFinish = async (req, res, next) => {
     if (!book) {
       return res.status(404).json({ message: 'Book not found' });
     }
-
+     const audioDuration = book.audioDuration;
     // Play the audio
-    await playaudio(book.bookAudioUrl);
+    await playaudio(book.bookAudioUrl, audioDuration);
 
     // Create and save the finish record
     const finish = new Finish({
@@ -28,17 +28,31 @@ exports.addFinish = async (req, res, next) => {
   } catch (error) {
     console.error('Error storing finish', error);
     res.status(500).json({ message: 'Internal Server Error' });
-  }
+  }  
+finally
+{
+  clearPlaybackTimeout();
+}
+
 };
 
-async function playaudio(audioUrl) {
+async function playaudio(audioUrl, duration) {
   return new Promise((resolve) => {
-    setTimeout(() => {
+ playbackTimeout = setTimeout(() => {
       console.log('Audio Playback Finished');
       resolve();
-    }, 10000);
+    }, duration * 1000);
   });
 }
+ function clearPlaybackTimeout()
+ {
+  if(playbackTimeout)
+  {
+    clearTimeout(playbackTimeout);
+    console.log("Audio PlayBack Stopped");
+  }
+ }
+
 
 exports.deleteFinish = async(req, res, next) =>
 {

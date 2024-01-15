@@ -68,6 +68,11 @@ bookUrl:
     type: String,
     required: true
 },
+audioDuration:
+{
+    type: String,
+    required: true
+},
 authorId:
 {
     type: Schema.Types.ObjectId,
