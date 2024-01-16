@@ -77,3 +77,19 @@ exports.deleteCards = async(req, res, next) =>
           res.status(200).json({message: "Cards Delete Failed"});
         });
 };
+exports.getCards = async(req, res, next) =>
+{
+    const cards = await Cards.find();
+    res.status(200).json({message: "Cards Info", cards});
+};
+exports.getSingleCards  = async(req, res, next)=>
+{
+    const cardId = req.params.cardId;
+    Cards.findById(cardId).then(cards =>
+        {
+            res.status(200).json({message: "Card Details", cards});
+        }).catch(err =>
+            {
+                console.log(err);
+            });
+};
