@@ -24,6 +24,7 @@ catch(error)
 {
     console.error(error);
     res.status(500).json({error: "Internal Server Error"});
+    next(error);
 }
 };
 exports.UpdateCard = async(req, res, next) =>
@@ -75,6 +76,7 @@ exports.deleteCards = async(req, res, next) =>
     }).catch(err =>
         {
           res.status(200).json({message: "Cards Delete Failed"});
+          next(err);
         });
 };
 exports.getCards = async(req, res, next) =>
@@ -91,5 +93,6 @@ exports.getSingleCards  = async(req, res, next)=>
         }).catch(err =>
             {
                 console.log(err);
+                next(err);
             });
 };

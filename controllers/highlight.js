@@ -1,6 +1,8 @@
 const Highlight = require('../models/highlights');
 exports.addhighLight = async(req, res, next) =>
 {
+    try
+    {
     const userId = req.user._id;
     const bookId = req.body.bookId;
     const selectedText= req.body.selectedText;
@@ -13,6 +15,12 @@ const highlight = new Highlight(
 );
 const results = await highlight.save();
 res.status(200).json({message: "Fetch Results", results});
+    }
+    catch(err)
+    {
+        console.log(err);
+        next(err);
+    }
 };
 exports.getlightText = async(req, res, next) =>
 {

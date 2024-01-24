@@ -2,6 +2,8 @@ const Download = require('../models/download');
 const Book = require('../models/book');
 exports.addDownload = async(req,res,next) =>
 {
+    try
+    {
     const userId = req.user._id;
     const bookId = req.body.bookId;
     const downloads = new Download(
@@ -12,6 +14,13 @@ exports.addDownload = async(req,res,next) =>
     );
     const results = await downloads.save();
     res.status(200).json({message: "Downloaded Added", results});
+    }
+    catch(err)
+    {
+        console.error(err);
+        res.status(500).json({message: "Internal Server Error"});
+        next(err);
+    }
 };
 exports.deleteDownload = async(req, res, next) =>
 {
@@ -40,6 +49,9 @@ exports.deleteDownload = async(req, res, next) =>
 };
 exports.getDownloads = async(req, res, next) =>
 {
+    try
+    {
+
 const downloads = await Download.find();
 const books = (await (downloads)).map(download =>download.bookId);
 const bookData = await Book.find({_id: { $in: books}});
@@ -49,4 +61,10 @@ const authorname = (await (bookData)).map(books =>books.authorName);
 const rating = (await (bookData)).map(books =>books.bookrating);
 const minutes = (await (bookData)).map(books =>books.mintues);
 res.status(200).json({message: "Fetch Downloads", imageUrl, title, authorname, rating, minutes});
+    }
+    catch(error)
+    {
+        console.error(error);
+        next(error);
+    }
 };

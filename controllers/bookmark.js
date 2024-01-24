@@ -3,6 +3,8 @@ const Book  = require('../models/book');
 const User = require('../models/user');
 exports.addBookMark = async(req, res, next) =>
 {
+    try
+    {
     const bookId = req.body.bookId;
     const userId = req.user._id;
     const bookmarks = new Bookmark(
@@ -13,6 +15,13 @@ exports.addBookMark = async(req, res, next) =>
     );
     const results = await bookmarks.save();
     res.status(200).json({message: "Book Add to Bookmark", results});
+    }
+    catch(err)
+    {
+        console.error(err);
+        res.status(500).json({message: "Internal Server Error"});
+        next(err);
+    }
 };
 exports.UpdateBookmark = async(req, res, next) =>
 {
@@ -57,6 +66,7 @@ exports.deleteBookMark = async(req, res, next) =>
         }).catch(err =>
             {
                 res.status(200).json({message: "Bookmark Delete Failed"});
+                next(err);
             });
 };
 exports.getbookMarks = async(req, res, next) =>
@@ -88,5 +98,6 @@ res.status(200).json({message: "Fetch ", results, userinfo});
     {
 console.log(error);
 res.status(200).json({message: "Internal Server Error"});
+next(error);
     }
 };

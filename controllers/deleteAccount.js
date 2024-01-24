@@ -17,4 +17,12 @@ exports.deleteUser = async(req, res, next) =>
 
     const result = await User.findByIdAndDelete(userId);
     res.status(200).json({message: "Account Delete SuccessFull", result});
+    req.session.destroy(err=>{
+        if(err)
+        {
+            console.log(err);
+            return res.status(500).json({error: "Internal Server Error"});
+        }
+        res.status(200).json({message: "User Remove From Session"});
+    }); 
 };

@@ -12,19 +12,14 @@ exports.getAddUser = async (req, res, next) => {
             email: email,
             password: hashedPw
         });
-
         const savedUser = await user.save();
-
         // Generate OTP
         function generateNumericOtp(length) {
             const min = Math.pow(10, length - 1);
             const max = Math.pow(10, length) - 1;
             return Math.floor(Math.random() * (max - min + 1) + min);
         }
-        
         const otp = generateNumericOtp(4);
-        
-
         // Save OTP to the user
         await User.findOneAndUpdate({ email }, { otp }, { upsert: true });
 
@@ -92,7 +87,7 @@ exports.login = async (req, res, next) => {
                 console.error(err);
                 return res.status(500).json({ error: 'Internal Server Error' });
             }
-            return res.status(200).json({ userId: user._id.toString(), email: email });
+            return res.status(200).json({message: "The User Login Successfully"});
         });
     } catch (err) {
         if (!err.statusCode) {
@@ -101,42 +96,61 @@ exports.login = async (req, res, next) => {
         return next(err);
     }
 };
-exports.postOTPEmail = async(req, res, next) =>
-{
-const email = req.body.email;
-//const user = await User.findOne({email: email});
-
-function generateNumericOtp(length) {
+exports.postOTPEmail = async (req, res, next) => {
+    const email = req.body.email;
+  
+    try {
+      if (!email) {
+        return res.status(400).json({ message: 'Email not provided.' });
+      }
+  
+      const user = await User.findOne({ email });
+  
+      if (!user) {
+        return res.status(404).json({ message: 'Email does not exist in our records.' });
+      }
+  
+      const otp = generateNumericOtp(4);
+  
+      await User.findOneAndUpdate({ email }, { otp }, { upsert: true });
+  
+      const message = {
+        From: 'srs1@3rdeyesoft.com',
+        To: email,
+        Subject: 'Your OTP',
+        TextBody: `Your OTP is ${otp}`,
+      };
+  
+      const response = await postmarkClient.sendEmail(message);
+      res.status(200).json({ message: 'OTP sent successfully.'});
+    } catch (err) {
+      console.error('Error in postOTPEmail:', err);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  };
+  
+  function generateNumericOtp(length) {
     const min = Math.pow(10, length - 1);
     const max = Math.pow(10, length) - 1;
     return Math.floor(Math.random() * (max - min + 1) + min);
-}
-const otp = generateNumericOtp(4);
+  }
 
-try
-{
-    await User.findOneAndUpdate({email}, {otp}, {upsert: true});
-}
-catch(err)
-{
-    console.log(err);
-}
-const message = {
-    From: 'srs1@3rdeyesoft.com',
-    To: email,
-    Subject: "Your OTP",
-    Textbody: `Your OTP is ${otp} `,
-};
-const response = await postmarkClient.sendEmail(message);
-console.log("Email Sent With OTP", response);
-res.json({ message: 'OTP sent successfully.',response });
-};
-exports.changePasswordOTP = async (req, res, next) => {
-    const otp = req.body.otp;
-    const password = req.body.password;
-    const passwordToken = req.body.passwordToken;
-  
+  exports.changePasswordOTP = async (req, res, next) => {
     try {
+      const { otp, password, passwordToken } = req.body;
+  
+      // Check if password is provided
+      if (!password) {
+        return res.status(400).json({ message: 'Password is required.' });
+      }
+  
+      // Check if password exists
+      const userWithPassword = await User.findOne({ password });
+  
+      if (!userWithPassword) {
+        return res.status(400).json({ message: 'Password Not exists.' });
+      }
+  
       const user = await User.findOne({
         otp: otp,
         resetToken: passwordToken,
@@ -144,29 +158,27 @@ exports.changePasswordOTP = async (req, res, next) => {
       });
   
       if (!user) {
-        return res.status(404).json({ message: "User not found or OTP expired" });
+        return res.status(404).json({ message: 'User not found or OTP expired.' });
       }
   
-        const hashedPassword = await bcrypt.hash(password, 12);
-        user.password = hashedPassword;
-        await user.save();
-        await User.findOneAndUpdate({ _id: user._id }, { $set: { otp: null } });
+      const hashedPassword = await bcrypt.hash(password, 12);
+      user.password = hashedPassword;
+      await user.save();
+      await User.findOneAndUpdate({ _id: user._id }, { $set: { otp: null } });
   
-      //  const newToken = jwt.sign(
-   //       { userId: user._id, email: user.email },
-   //       "somesupersecretsecret",
-   //       { expiresIn: "1h" }
-    //    );
-        req.session.user = {
-          userId: user._id,
-          email: user.email,
-          password: user.password,
-        };
-        res.json({ message: "Password updated"});
-      
+      // You might consider creating a new JWT token here, but it's commented out in your code
+  
+      req.session.user = {
+        userId: user._id,
+        email: user.email,
+        password: user.password, // Note: Storing the password in the session might not be necessary or recommended
+      };
+  
+      res.json({ message: 'Password updated successfully.' });
     } catch (error) {
-      console.error("Error in change Password OTP:", error);
-      res.status(500).json({ message: "Internal Server Error" });
+      console.error('Error in change Password OTP:', error);
+      res.status(500).json({ message: 'Internal Server Error' });
+      next(error);
     }
   };
   
@@ -184,5 +196,5 @@ exports.logout = async(req, res, next) =>
             return res.status(500).json({error: "Internal Server Error"});
         }
         res.status(200).json({message: "Logout Successfull"});
-    })
+    });
 };

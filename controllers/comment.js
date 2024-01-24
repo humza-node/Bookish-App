@@ -1,6 +1,8 @@
 const Comment = require('../models/comment');
 exports.addComments = async(req, res, next) =>
 {
+    try
+    {
     const bookId = req.body.bookId;
     const text = req.body.text;
     const userId = req.user._id;
@@ -13,6 +15,13 @@ exports.addComments = async(req, res, next) =>
     );
     const results = await comments.save();
     res.status(200).json({message: "Comment Added", results});
+    }
+    catch(err)
+    {
+        console.error(err);
+        res.status(500).json({message: "Internal Server Error"});
+        next(err);
+    }
 };
 exports.updateComments = async(req, res, next) =>
 {
@@ -59,10 +68,20 @@ exports.deleteComments = async(req, res, next) =>
         }).catch(err =>
             {
                 res.status(200).json({message: "Favorites Deleted Failed"});
+                next(err);
             });
 };
 exports.getComments = async(req, res, next) =>
 {
+    try
+    {
     const comments = await Comment.find();
     res.status(200).json({message: "Fetch Comments", comments});
+    }
+    catch(error)
+    {
+        console.error(error);
+        console.log(error);
+        next(error);
+    }
 };

@@ -2,6 +2,8 @@ const Book = require('../models/book');
 const filehelper = require('../util/file');
 exports.getAddBook = async(req, res, next) =>
 {
+    try
+    {
 const booktitle = req.body.booktitle;
 const bookUserViewtype = req.body.bookUserViewtype;
 const authorName = req.body.authorName;
@@ -40,11 +42,25 @@ authorId:authorId
 );
 const results = await books.save();
 res.status(200).json({message: "Book Saved", results});
+    }
+    catch(err)
+    {
+        console.error(err);
+        res.status(500).json({message: "Internal Server Error"});
+    }
 };
 exports.getBooks = async(req, res, next) =>
 {
+    try
+    {
     const Books = await Book.find();
     res.status(200).json({message: "Returned Books", Books});
+    }
+    catch(err)
+    {
+        console.error(err);
+        next(err);
+    }
 };
 exports.updateBooks = async(req, res, next) =>
 {

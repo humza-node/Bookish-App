@@ -2,26 +2,36 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const OnboardSchema = new Schema(
     {
-        answer1:
-        {
-           type: String,
-           required: true
-        },
-        answer2:
-        {
-            type: String,
-            required: true
-        },
-        answer3:
-        {
-            type: String,
-            required: true
-        },
-        answer4:
-        {
-            type: String,
-            required: true
-        },
+        selectedOptions1: [
+            {
+              type: String,
+              enum: ['Be happy', 'Motivation', 'Working Habits', 'Increase Productivity', 'Maintain Health'],
+              required: true
+            },
+          ],
+         selectedOptions2: [
+            {
+                type: String,
+                enum: ['Replace Social Media', 'Develop the reading habit', 'Information Overload','Personal Growth'],
+                required: true
+            }
+         ],
+         selectedOptions3:
+         [
+            {
+                type: String,
+                enum: ['Be happy', 'Motivation', 'Working Habits', 'Increase Productivity', 'Maintain Health'],
+                required: true
+            }
+         ],
+         selectedOptions4:
+         [
+            {
+                type: String,
+                enum: ['Replace Social Media', 'Develop the reading habit', 'Information Overload', 'Personal Growth'],
+                required: true
+            }
+         ],
         userId:
         {
             type: Schema.Types.ObjectId,

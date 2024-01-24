@@ -2,6 +2,7 @@ const PersonalInfo = require('../models/personalInfo');
 const filehelper = require('../util/file');
 exports.addPersonalInfo = async(req, res, next) =>
 {
+    try{
     const image = req.file.path.replace("\\","/");
     const fullname = req.body.fullname;
     const phone = req.body.phone;
@@ -22,6 +23,13 @@ const absoluteImageUrl = `${baseUrl}/${image}`;
     );
     const results  = await Personal.save();
     res.status(200).json({message: "Personal Added", results});
+    }
+    catch(err)
+    {
+        console.error(err);
+        res.status(500).json({message: "Internal Server Error"});
+        next(err);
+    }
 };
 exports.updatePersonalInfo = async(req, res, next) =>
 {
@@ -91,6 +99,15 @@ exports.deletePersonal = async(req, res, next) =>
 };
 exports.getPersonals = async(req, res, next) =>
 {
+    try
+    {
     const personals = await PersonalInfo.find();
     res.status(200).json({message: 'Fetch Personals', personals});
+    }
+    catch(err)
+    {
+        console.error(err);
+        res.status(500).json({message: "Internal Server Error"});
+        next(err);
+    }
 };

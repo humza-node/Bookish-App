@@ -1,18 +1,18 @@
 const Author = require('../models/authors');
 const filehelper = require('../util/file');
-exports.getAddAuthor = async(req, res, next) =>
-{
-const image = req.file.path.replace("\\","/");
-const authorname = req.body.authorname;
-const authortype = req.body.authortype;
-const penName = req.body.penName;
-const rating = req.body.rating;
-const totalBooks = req.body.totalBooks;
-const aboutauthor = req.body.aboutauthor;
-const baseUrl = 'https://pink-angry-beetle.cyclic.app';
-const absoluteImageUrl = `${baseUrl}/${image}`;
-const authors = new Author(
-    {
+exports.getAddAuthor = async (req, res, next) => {
+    try {
+      const image = req.file.path.replace("\\", "/");
+      const authorname = req.body.authorname;
+      const authortype = req.body.authortype;
+      const penName = req.body.penName;
+      const rating = req.body.rating;
+      const totalBooks = req.body.totalBooks;
+      const aboutauthor = req.body.aboutauthor;
+      const baseUrl = 'https://pink-angry-beetle.cyclic.app';
+      const absoluteImageUrl = `${baseUrl}/${image}`;
+  
+      const authors = new Author({
         authorImage: absoluteImageUrl,
         authorname: authorname,
         authortype: authortype,
@@ -20,11 +20,17 @@ const authors = new Author(
         rating: rating,
         totalBooks: totalBooks,
         aboutauthor: aboutauthor
+      });
+  
+      const results = await authors.save();
+      res.status(200).json({ message: "Author Added", results });
+    } catch (error) {
+      console.error('Error adding author:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+      next(error);
     }
-);
-const results = await authors.save();
-res.status(200).json({message: "Author Added ", results });
-};
+  };
+  
 exports.updateAuthors = async(req, res, next) =>
 {
     const authorId = req.params.authorId;
@@ -71,8 +77,16 @@ const absoluteImageUrl = `${baseUrl}/${image}`;
 };
 exports.getAuthors = async(req, res, next) =>
 {
+    try
+    {
 const results = await Author.find();
 res.status(200).json({message: "Fetch Results", results});
+    }
+    catch(err)
+    {
+        console.error(err);
+        next(err);
+    }
 };
 exports.getDeleteAuthor = async(req, res, next) =>
 {
@@ -102,13 +116,30 @@ Author.findById(authorId).then(authors =>
 };
 exports.getSingleAuthor = async(req, res, next) =>
 {
+    try
+    {
+
     const  authorId = req.params.authorId;
   const authors = await Author.findById(authorId);
   res.status(200).json({message: "Fetch Single Author", authors});
+    }
+    catch(err)
+    {
+        console.error(err);
+        next(err);
+    }
 };
 exports.getSearchAuthors = async(req, res, next) =>
 {
+    try
+    {
     const name = req.query.name;
     const FindAuthors = await Author.find({authorname: {$regex: new RegExp(name, 'i')}});
     res.status(200).json({message: "Fetch Authors", FindAuthors});
+    }
+    catch(err)
+    {
+        console.error(err);
+        next(err);
+    }
 };

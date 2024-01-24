@@ -58,8 +58,16 @@ exports.EditReviews = async(req, res, next) =>
 };
 exports.getReviews = async(req, res, next) =>
 {
+    try
+    {
     const results = await Rating.find();
     res.status(200).json({message: "Reviews and Rating", results});
+    }
+    catch(err)
+    {
+        console.error(err);
+        next(err);
+    }
 };
 exports.deleteReview = async(req, res, next) =>
 {
