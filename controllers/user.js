@@ -30,6 +30,7 @@ exports.getAddUser = async (req, res, next) => {
             Subject: "Your OTP",
             Textbody: `Your OTP is ${otp}`,
         };
+        
         const response = await postmarkClient.sendEmail(message);
         console.log("Email Sent With OTP", response);
 
@@ -126,6 +127,7 @@ exports.postOTPEmail = async (req, res, next) => {
     } catch (err) {
       console.error('Error in postOTPEmail:', err);
       res.status(500).json({ error: 'Internal Server Error' });
+      next(error);
     }
   };
   
@@ -196,5 +198,6 @@ exports.logout = async(req, res, next) =>
             return res.status(500).json({error: "Internal Server Error"});
         }
         res.status(200).json({message: "Logout Successfull"});
+        next(error);
     });
 };

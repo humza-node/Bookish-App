@@ -47,6 +47,7 @@ res.status(200).json({message: "Book Saved", results});
     {
         console.error(err);
         res.status(500).json({message: "Internal Server Error"});
+        next(err);
     }
 };
 exports.getBooks = async(req, res, next) =>
