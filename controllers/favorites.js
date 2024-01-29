@@ -19,7 +19,6 @@ exports.addFavorite = async (req, res, next) => {
         next(err);
     }
 };
-
 exports.updateFavorite = async(req, res, next) =>
 {
     const favoriteId = req.params.favoriteId;

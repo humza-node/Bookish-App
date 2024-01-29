@@ -105,11 +105,11 @@ Book.findById(bookId).then(books =>
         books.bookUrl=bookUrl;
         books.audioDuration=audioDuration;
         books.authorId = authorId;
-        if(image)
-        {
+        if (image) {
             filehelper.deletefile(books.bookImageUrl);
             books.bookImageUrl = absoluteImageUrl;
         }
+        
            return  books.save();
     }).then(result =>
         {

@@ -1,4 +1,5 @@
 const Rating = require('../models/rating');
+const PersonalInfo = require('../models/personalInfo');
 exports.addRating = async(req, res, next) =>
 {
     try
@@ -56,19 +57,33 @@ exports.EditReviews = async(req, res, next) =>
             next(error);
         }
 };
-exports.getReviews = async(req, res, next) =>
-{
-    try
-    {
-    const results = await Rating.find();
-    res.status(200).json({message: "Reviews and Rating", results});
+exports.getReviews = async (req, res, next) => {
+    try {
+      const userId = req.user._id;
+  
+      // Use findOne with a condition directly instead of finding and then filtering
+      const personal = await PersonalInfo.findOne({ userId });
+  
+      if (!personal) {
+        return res.status(404).json({ message: "Personal information not found" });
+      }
+  
+      // Destructure userImage directly from personal
+      const { userImage: image } = personal;
+  
+      // Use findOne with a condition directly instead of finding and then filtering
+      const rating = await Rating.findOne({ userId });
+  
+      if (!rating) {
+        return res.status(404).json({ message: "Rating information not found" });
+      }
+  
+      res.status(200).json({ message: "Reviews and Rating", results: rating, image });
+    } catch (err) {
+      console.error(err);
+      next(err);
     }
-    catch(err)
-    {
-        console.error(err);
-        next(err);
-    }
-};
+  };
 exports.deleteReview = async(req, res, next) =>
 {
   const reviewId = req.params.reviewId;

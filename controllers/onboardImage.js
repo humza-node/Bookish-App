@@ -15,7 +15,7 @@ exports.addOnboardImage = async(req, res, next) =>
         }
     );
     const results = await onboards.save();
-    res.status(200).json({message: "Onboards Images"});
+    res.status(200).json({message: "Onboards Images", results});
     }
     catch(error)
     {

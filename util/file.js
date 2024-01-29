@@ -1,12 +1,12 @@
 const fs = require('fs');
-const deletefile = (filepath) =>
-{
-    fs.unlink(filepath, (err) =>
-    {
-        if(err)
-        {
-            throw err;
-        }
-    });
-};
-exports.deletefile=deletefile;
+
+function deletefile(filePath) {
+    try {
+        fs.unlinkSync(filePath);
+        console.log('File deleted successfully');
+    } catch (err) {
+        console.error('Error deleting file:', err);
+    }
+}
+
+module.exports = { deletefile };

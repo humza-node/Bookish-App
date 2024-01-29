@@ -70,6 +70,7 @@ const DownloadRoute = require('./routes/download');
 const RatingRoute = require('./routes/rating');
 const LibraryRoute = require('./routes/library');
 const OnboardImageRoute = require('./routes/onboard Image');
+const Package = require('./routes/packages');
 // Middleware to set locals for templates
 app.use((req, res, next) => {
     req.session = req.session || {};
@@ -114,6 +115,7 @@ app.use(DownloadRoute);
 app.use(RatingRoute);
 app.use(LibraryRoute);
 app.use(OnboardImageRoute);
+app.use(Package);
 // Start your server
 mongoose.connect(MONGO_DB_URI)
     .then(results => {

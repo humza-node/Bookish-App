@@ -22,7 +22,6 @@ exports.getAddUser = async (req, res, next) => {
         const otp = generateNumericOtp(4);
         // Save OTP to the user
         await User.findOneAndUpdate({ email }, { otp }, { upsert: true });
-
         // Send email with OTP
         const message = {
             From: 'srs1@3rdeyesoft.com',
@@ -186,8 +185,17 @@ exports.postOTPEmail = async (req, res, next) => {
   
 exports.getUsers = async(req, res, next) =>
 {
+  try
+  {
+
     const results = await User.find();
     return res.status(200).json({message: "Fetch Users", results});
+  }
+  catch(error)
+  {
+    console.error(error);
+    next(error);
+  }
 };
 exports.logout = async(req, res, next) =>
 {
